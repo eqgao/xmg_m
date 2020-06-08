@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com._520it.crm.mapper.DictionaryItemMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.DictionaryItem">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="sn" property="sn" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="intro" property="intro" jdbcType="VARCHAR"/>
+
+        <association property="details"
+                     javaType="com._520it.crm.domain.Dictionary"
+                     column="details_id"
+                     select="com.gdut.society.mapper.DictionaryMapper.selectByPrimaryKey"
+                     fetchType="eager"
+        />
+    </resultMap>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+            delete from dictionaryitem
+            where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="insert" parameterType="com._520it.crm.domain.DictionaryItem" useGeneratedKeys="true" keyProperty="id">
+    insert into dictionaryitem (sn, name, intro, 
+      details_id)
+    values (#{sn,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{intro,jdbcType=VARCHAR}, 
+      #{details.id,jdbcType=BIGINT})
+  </insert>
+
+    <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.DictionaryItem">
+    update dictionaryitem
+    set sn = #{sn,jdbcType=VARCHAR},
+      name = #{name,jdbcType=VARCHAR},
+      intro = #{intro,jdbcType=VARCHAR},
+      details_id = #{details.id,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select
+    id, sn, name, intro, details_id
+    from
+    dictionaryitem
+    where
+    id = #{id,jdbcType=BIGINT}
+  </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+    select
+    id, sn, name, intro, details_id
+    from
+    dictionaryitem
+  </select>
+
+    <!--=========================================-->
+    <select id="selectSource" resultMap="BaseResultMap">
+        select
+        id, sn, name, intro, details_id
+        from
+        dictionaryitem
+        where details_id = 1
+    </select>
+    <select id="selectLevel" resultMap="BaseResultMap">
+        select
+        id, sn, name, intro, details_id
+        from
+        dictionaryitem
+        where details_id = 2
+    </select>
+    <select id="selectStatus" resultMap="BaseResultMap">
+        select
+        id, sn, name, intro, details_id
+        from
+        dictionaryitem
+        where details_id = 3
+        and id not in (11,12,17,18)
+    </select>
+    <!--========================================================================-->
+    <select id="selectAllStatus" resultMap="BaseResultMap">
+        select
+        id, sn, name, intro, details_id
+        from
+        dictionaryitem
+         where details_id = 3
+    </select>
+    <!--========================================================================-->
+
+
+    <sql id="where_sql">
+        <where>
+            <if test="details_id!=null">
+                and details_id = #{details_id}
+            </if>
+        </where>
+    </sql>
+
+    <select id="queryPageCount" resultType="long">
+        select
+        count(id)
+        from
+        dictionaryitem
+        <include refid="where_sql"/>
+    </select>
+
+    <select id="queryPageResult" resultMap="BaseResultMap">
+        select
+        *
+        from
+        dictionaryitem
+        <include refid="where_sql"/>
+    </select>
+
+</mapper>

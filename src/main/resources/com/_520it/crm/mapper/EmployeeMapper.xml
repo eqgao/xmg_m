@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.EmployeeMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Employee">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="username" property="username" jdbcType="VARCHAR"/>
+        <result column="realname" property="realname" jdbcType="VARCHAR"/>
+        <result column="tel" property="tel" jdbcType="VARCHAR"/>
+        <result column="email" property="email" jdbcType="VARCHAR"/>
+        <result column="inputTime" property="inputtime" jdbcType="DATE"/>
+        <result column="state" property="state"/>
+        <result column="admin" property="admin"/>
+        <result column="student_id" property="studentId"/>
+
+        <association property="dept" javaType="com._520it.crm.domain.Department" columnPrefix="d_">
+            <result property="id" column="id"/>
+            <result property="name" column="name"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="AllResultMap" type="com._520it.crm.domain.Employee">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="username" property="username" jdbcType="VARCHAR"/>
+        <result column="realname" property="realname" jdbcType="VARCHAR"/>
+        <result column="password" property="password" jdbcType="VARCHAR"/>
+        <result column="tel" property="tel" jdbcType="VARCHAR"/>
+        <result column="email" property="email" jdbcType="VARCHAR"/>
+        <result column="inputTime" property="inputtime" jdbcType="DATE"/>
+        <result column="state" property="state" jdbcType="BIT"/>
+        <result column="admin" property="admin" jdbcType="BIT"/>
+        <result column="student_id" property="studentId"/>
+        <association property="dept" javaType="com._520it.crm.domain.Department" columnPrefix="d_">
+            <result property="id" column="id"/>
+            <result property="name" column="name"/>
+        </association>
+    </resultMap>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from employee
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com._520it.crm.domain.Employee" useGeneratedKeys="true" keyProperty="id">
+    insert into employee (username, realname, password, 
+      tel, email, dept_id, 
+      inputTime, state, admin)
+    values (#{username,jdbcType=VARCHAR}, #{realname,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, 
+      #{tel,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, #{dept.id,jdbcType=BIGINT}, 
+      #{inputtime,jdbcType=DATE}, #{state,jdbcType=BIT}, #{admin,jdbcType=BIT})
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Employee">
+    update employee
+    set username = #{username,jdbcType=VARCHAR},
+      realname = #{realname,jdbcType=VARCHAR},
+      tel = #{tel,jdbcType=VARCHAR},
+      email = #{email,jdbcType=VARCHAR},
+      dept_id = #{dept.id,jdbcType=BIGINT},
+      inputTime = #{inputtime,jdbcType=DATE},
+      admin = #{admin,jdbcType=BIT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select id, username, realname, password, tel, email, dept_id, inputTime, state, admin,student_id
+    from employee
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select id, username, realname, password, tel, email, dept_id, inputTime, state, admin,student_id
+    from employee
+  </select>
+
+    <sql id="where_sql">
+        <where>
+            <if test="keyword!=null and keyword!=''">
+                and (
+                e.username like concat('%',#{keyword},'%')
+                or e.realname like concat('%',#{keyword},'%')
+                or e.tel like concat('%',#{keyword},'%')
+                )
+            </if>
+            <if test="id!=null">
+                and e.id = #{id}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 查询总结果数 -->
+    <select id="queryPageCount" resultType="long">
+        select count(*) from employee e
+        <include refid="where_sql"/>
+    </select>
+
+    <!-- 查询结果集 -->
+    <select id="queryPageResult" resultMap="BaseResultMap">
+        select e.*,d.id as d_id,d.name as d_name from employee e left join department d on (e.dept_id = d.id)
+        <include refid="where_sql"/>
+        limit #{start},#{rows}
+    </select>
+
+    <update id="changeState">
+  	 update employee set state = 0 where id = #{id}
+  </update>
+
+    <!-- 处理角色和权限中间表,关联关系 -->
+    <insert id="insertRelation">
+  	 insert into employee_role(employee_id,role_id) values(#{employeeId},#{roleId})
+  </insert>
+
+    <!-- 打破关系 -->
+    <delete id="deleteRelation">
+  	delete from employee_role where employee_id = #{employeeId}
+  </delete>
+
+    <!-- 根据用户名查询员工 -->
+    <select id="getEmployeeByUsername" resultMap="AllResultMap">
+  	select * from employee where username = #{username}
+  </select>
+
+
+    <!-- 查询某个部门下是否有员工 -->
+    <select id="selectEmployeeByDept" resultMap="BaseResultMap">
+  select e.* from employee e join department d on e.dept_id = d.id where d.id=#{id}
+  </select>
+
+</mapper>

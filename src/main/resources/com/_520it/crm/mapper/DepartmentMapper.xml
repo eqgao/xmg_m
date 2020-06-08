@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.DepartmentMapper">
+	<resultMap id="BaseResultMap" type="com._520it.crm.domain.Department">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="sn" property="sn" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="state" property="state" jdbcType="BIT" />
+		<association property="manager" javaType="Employee">
+			<result property="id" column="eid" />
+			<result property="username" column="eusername" />
+			<result property="realname" column="erealname" />
+		</association>
+		<association property="parent" javaType="Department">
+			<result property="id" column="pid" />
+			<result property="sn" column="psn" />
+			<result property="name" column="pname" />
+		</association>
+	</resultMap>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+		delete from
+		department
+		where id = #{id,jdbcType=BIGINT}
+	</delete>
+	<insert id="insert" parameterType="com._520it.crm.domain.Department"
+		useGeneratedKeys="true" keyProperty="id">
+		insert into department (sn, name,
+		manager_id,
+		parent_id, state)
+		values (#{sn,jdbcType=VARCHAR},
+		#{name,jdbcType=VARCHAR},
+		#{manager.id,jdbcType=BIGINT},
+		#{parent.id,jdbcType=BIGINT}, #{state,jdbcType=BIT})
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Department">
+		update department
+		set sn = #{sn,jdbcType=VARCHAR},
+		name = #{name,jdbcType=VARCHAR},
+		manager_id = #{manager.id,jdbcType=BIGINT},
+		parent_id =
+		#{parent.id,jdbcType=BIGINT},
+		state = #{state,jdbcType=BIT}
+		where id =
+		#{id,jdbcType=BIGINT}
+	</update>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Long">
+		select id, sn, name, manager_id, parent_id, state
+		from
+		department
+		where id = #{id,jdbcType=BIGINT}
+	</select>
+	<select id="selectAll" resultMap="BaseResultMap">
+		select id, sn, name,
+		manager_id, parent_id, state
+		from department
+	</select>
+	<select id="selectList" resultMap="BaseResultMap">
+		select d.id, d.sn, d.name,
+		d.manager_id, d.parent_id, d.state,
+		p.id pid,p.name pname,e.id eid,e.username eusername,e.realname erealname
+		from department d left join department p on d.parent_id = p.id
+		left join employee e on d.manager_id = e.id
+	</select>
+	<!-- chenming -->
+	<select id="selectDepartmentBySn" resultMap="BaseResultMap">
+	select * from department where sn =#{sn} and name =#{name}
+	</select>
+	<update id="changeDept">
+	update department set state = 0 where id = #{id}
+	</update>
+	<select id="selectChildDept" resultMap="BaseResultMap">
+	select p.* from department p join department d on p.id = d.parent_id where p.id =#{id}
+	</select>
+	<!-- chenming -->
+	
+</mapper>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.StudentInfoMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.StudentInfo">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="age" property="age" jdbcType="INTEGER"/>
+        <result column="gender" property="gender" jdbcType="BIT"/>
+        <result column="school" property="school" jdbcType="VARCHAR"/>
+        <result column="major" property="major" jdbcType="VARCHAR"/>
+        <result column="education" property="education" jdbcType="INTEGER"/>
+        <result column="computerOrNot" property="computerOrNot" jdbcType="BIT"/>
+        <result column="profession" property="profession" jdbcType="VARCHAR"/>
+        <result column="salary" property="salary" jdbcType="DECIMAL"/>
+        <result column="image" property="image"/>
+
+        <association property="address" columnPrefix="a_" javaType="com._520it.crm.domain.Address">
+            <id property="id" column="id"/>
+            <result property="code" column="code"/>
+            <result property="name" column="name"/>
+        </association>
+    </resultMap>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from studentinfo
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+
+    <insert id="insert" parameterType="com._520it.crm.domain.StudentInfo" useGeneratedKeys="true" keyProperty="id">
+    insert into studentinfo
+    (age, gender, school,
+      major, education, computerOrNot, 
+      profession, salary,address_id,image
+      )
+    values (
+    #{age,jdbcType=INTEGER},
+     #{gender,jdbcType=BIT},
+     #{school,jdbcType=VARCHAR},
+      #{major,jdbcType=VARCHAR},
+       #{education,jdbcType=INTEGER},
+       #{computerOrNot,jdbcType=BIT},
+      #{profession,jdbcType=VARCHAR},
+      #{salary,jdbcType=DECIMAL},
+#{address.id},#{image}
+      )
+  </insert>
+
+    <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.StudentInfo">
+    update studentinfo
+    set age = #{age,jdbcType=INTEGER},
+      gender = #{gender,jdbcType=BIT},
+      school = #{school,jdbcType=VARCHAR},
+      major = #{major,jdbcType=VARCHAR},
+      education = #{education,jdbcType=INTEGER},
+      computerOrNot = #{computerOrNot,jdbcType=BIT},
+      profession = #{profession,jdbcType=VARCHAR},
+      salary = #{salary,jdbcType=DECIMAL},
+      address_id = #{address.id,jdbcType=BIGINT},
+      image = #{image}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+    <sql id="base_param">
+        s.id,
+        s.age,
+        s.gender,
+        s.school,
+        s.major,
+        s.education,
+        s.computerOrNot,
+        s.profession,
+        s.salary,
+        s.address_id,
+        s.image,
+        a.id a_id,
+        a.name a_name,
+        a.code a_code
+    </sql>
+    <sql id="base_table">
+        studentinfo s
+       left join address a on s.address_id = a.id
+    </sql>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="base_param"/>
+        from
+        <include refid="base_table"/>
+        where s.id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        select
+        <include refid="base_param"/>
+        from
+        <include refid="base_table"/>
+    </select>
+</mapper>

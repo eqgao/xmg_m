@@ -1,0 +1,23 @@
+package com._520it.crm.service;
+
+import com._520it.crm.domain.Address;
+
+import java.util.List;
+
+public interface IAddressService {
+    int deleteByPrimaryKey(Long id);
+
+    int insert(Address record);
+
+    Address selectByPrimaryKey(Long id);
+
+    List<Address> selectAll();
+
+    List<Address> selectByCode(String parentCode);
+
+    List<Address> selectListByPrimaryKey(Long addressId);
+
+    int updateByPrimaryKey(Address record);
+
+
+}

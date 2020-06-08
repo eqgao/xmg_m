@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.JobinfoMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Jobinfo">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="profession" property="profession" jdbcType="VARCHAR"/>
+        <result column="time" property="time" jdbcType="DATE"/>
+        <result column="salary" property="salary" jdbcType="DECIMAL"/>
+        <result column="welfare" property="welfare" jdbcType="VARCHAR"/>
+        <result property="company" column="company"/>
+        <association property="stu" javaType="com._520it.crm.domain.Student">
+            <result property="id" column="sid"/>
+            <result property="name" column="sname"/>
+            <association property="studentinfo" javaType="com._520it.crm.domain.StudentInfo">
+                <result property="id" column="siid"/>
+                <result property="age" column="siage"/>
+                <result property="computerOrNot" column="sicomputerOrNot"/>
+                <result property="education" column="sieducation"/>
+                <result property="computerOrNot" column="sicomputerOrNot"/>
+                <result property="gender" column="sigender"/>
+                <result property="salary" column="sisalary"/>
+                <result property="major" column="simajor"/>
+                <result property="profession" column="siprofession"/>
+                <result property="school" column="sischool"/>
+                <association property="address" javaType="com._520it.crm.domain.Address">
+                    <result property="id" column="aid"/>
+                    <result property="name" column="aname"/>
+                </association>
+            </association>
+        </association>
+        <association property="address" javaType="com._520it.crm.domain.Address">
+            <result property="id" column="aid"/>
+            <result property="name" column="aname"/>
+        </association>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from jobinfo
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com._520it.crm.domain.Jobinfo" useGeneratedKeys="true" keyProperty="id">
+    insert into jobinfo (student_id, address_id, profession, 
+      time, salary, welfare,company)
+    values (#{stu.id,jdbcType=BIGINT}, #{address.id,jdbcType=BIGINT}, #{profession,jdbcType=VARCHAR}, 
+      #{time,jdbcType=DATE}, #{salary,jdbcType=DECIMAL}, #{welfare,jdbcType=VARCHAR},#{company})
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Jobinfo">
+    update jobinfo
+    set student_id = #{stu.id,jdbcType=BIGINT},
+      address_id = #{address.id,jdbcType=BIGINT},
+      profession = #{profession,jdbcType=VARCHAR},
+      time = #{time,jdbcType=DATE},
+      salary = #{salary,jdbcType=DECIMAL},
+      welfare = #{welfare,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select j.*,
+        s.id sid ,s.name sname,
+        a.id aid , a.name aname,
+        si.id siid,si.computerOrNot sicomputerOrNot,si.education sieducation,
+        si.gender sigender,si.salary sigender,si.salary sisalary,
+        si.major simajor,si.profession siprofession,
+        a.id aid ,a.name aname
+        from jobinfo j
+        left join student s on s.id = j.student_id
+        left join address a on a.id = j.address_id
+        left join studentinfo si on si.id = s.studentinfo_id
+    where j.id = #{id,jdbcType=BIGINT}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select id, student_id, address_id, profession, time, salary, welfare
+    from jobinfo
+  </select>
+
+    <sql id="where_sql">
+        <where>
+            <if test="beginTime!=null">
+                j.time &gt;= #{beginTime}
+            </if>
+            <if test="endTime!=null">
+                and j.time &lt;= #{endTime}
+            </if>
+            <if test="age!=null">
+                and si.age = #{age}
+            </if>
+            <if test="gender!=null">
+                and ui.gender = #{gender}
+            </if>
+            <if test="city!=null">
+                and j.city = #{city}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 查询总结果数 -->
+    <select id="queryPageCount" resultType="long">
+        select count(*)
+        from jobinfo j
+        left join student s on s.id = j.student_id
+        left join address a on a.id = j.address_id
+        left join studentinfo si on si.id = s.studentinfo_id
+        <include refid="where_sql"/>
+    </select>
+
+    <!-- 查询结果集 -->
+    <select id="queryPageResult" resultMap="BaseResultMap">
+        select j.*,
+        s.id sid ,s.name sname,
+        a.id aid , a.name aname,
+        si.id siid,si.age siage,si.computerOrNot sicomputerOrNot,si.education sieducation,
+        si.gender sigender,si.salary sigender,si.salary sisalary,
+        si.major simajor,si.profession siprofession,si.school sischool,
+        a.id aid ,a.name aname
+        from jobinfo j
+        left join student s on s.id = j.student_id
+        left join address a on a.id = j.address_id
+        left join studentinfo si on si.id = s.studentinfo_id
+        <include refid="where_sql"/>
+        limit #{start},#{rows}
+    </select>
+
+    <select id="querySelectChart" resultType="HashMap">
+        select
+        ${groupType} groupType,
+        sum(si.salary) brforeSalary,
+        sum(j.salary) afterSalary,
+        sum(j.salary)/count(*) avgSalary
+        from jobinfo j
+        left join student s on s.id = j.student_id
+        left join address a on a.id = j.address_id
+        left join studentinfo si on si.id = s.studentinfo_id
+        <include refid="where_sql"/>
+        group by ${groupType}
+    </select>
+
+
+</mapper>

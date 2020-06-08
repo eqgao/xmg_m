@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.CourseMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Course">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="schoolTime" property="schooltime" jdbcType="DATE"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="BIT"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <association property="lecturer" javaType="com._520it.crm.domain.Employee" columnPrefix="l_">
+            <result column="id" property="id"></result>
+            <result column="name" property="realname"></result>
+        </association>
+        <association property="teacher" javaType="com._520it.crm.domain.Employee" columnPrefix="t_">
+            <result column="id" property="id"></result>
+            <result column="name" property="realname"></result>
+        </association>
+        <association property="classinfo" javaType="com._520it.crm.domain.Classinfo" columnPrefix="ci_">
+            <result column="id" property="id"></result>
+            <result column="name" property="name"></result>
+        </association>
+        <association property="classRoom" javaType="com._520it.crm.domain.ClassRoom" columnPrefix="cr_">
+            <result column="id" property="id"></result>
+            <result column="name" property="name"></result>
+        </association>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from course
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com._520it.crm.domain.Course" useGeneratedKeys="true" keyProperty="id">
+    insert into course (schoolTime, name, lecturer_id, 
+      teacher_id, class_id, classroom_id, 
+      status, remark)
+    values (#{schooltime,jdbcType=DATE}, #{name,jdbcType=VARCHAR}, #{lecturer.id,jdbcType=BIGINT},
+      #{teacher.id,jdbcType=BIGINT}, #{classinfo.id,jdbcType=BIGINT}, #{classRoom.id,jdbcType=BIGINT},
+      #{status,jdbcType=BIT}, #{remark,jdbcType=VARCHAR})
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Course">
+    update course
+    set schoolTime = #{schooltime,jdbcType=DATE},
+      name = #{name,jdbcType=VARCHAR},
+      lecturer_id = #{lecturer.id,jdbcType=BIGINT},
+      teacher_id = #{teacher.id,jdbcType=BIGINT},
+      class_id = #{classinfo.id,jdbcType=BIGINT},
+      classroom_id = #{classRoom.id,jdbcType=BIGINT},
+      status = #{status,jdbcType=BIT},
+      remark = #{remark,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select id, schoolTime, name, lecturer_id, teacher_id, class_id, classroom_id, status, 
+    remark
+    from course
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+
+    <select id="selectCourseByClassId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select id, schoolTime, name, lecturer_id, teacher_id, class_id, classroom_id, status,
+    remark
+    from course
+    where class_id = #{id,jdbcType=BIGINT}
+  </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+   select c.*,l.id l_id,l.realname l_name,t.id t_id,t.realname t_name,
+    ci.id ci_id ,ci.name ci_name ,cr.id cr_id , cr.name cr_name
+    from course c
+    LEFT JOIN employee l ON c.lecturer_id = l.id
+    LEFT JOIN employee t ON t.id = c.teacher_id
+    LEFT JOIN classinfo ci ON ci.id = c.class_id
+    LEFT JOIN classroom cr ON cr.id = c.classroom_id
+  </select>
+
+
+    <sql id="where_sql">
+        <where>
+            <if test="keyword!=null and keyword!=''">
+                and (
+                c.name like concat("%",#{keyword},"%")
+                or l.realname like concat("%",#{keyword},"%")
+                or t.realname like concat("%",#{keyword},"%")
+                or ci.name like concat("%",#{keyword},"%")
+                or cr.name like concat("%",#{keyword},"%")
+                )
+            </if>
+            <if test="startTime!=null">
+                and schooltime &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and schooltime &lt;= #{endTime}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 查询总结果数 -->
+    <select id="queryPageCount" resultType="long">
+        select count(*) from course c
+        LEFT JOIN employee l ON c.lecturer_id = l.id
+        LEFT JOIN employee t ON t.id = c.teacher_id
+        LEFT JOIN classinfo ci ON ci.id = c.class_id
+        LEFT JOIN classroom cr ON cr.id = c.classroom_id
+        <include refid="where_sql"/>
+    </select>
+
+    <!-- 查询结果集 -->
+    <select id="queryPageResult" resultMap="BaseResultMap">
+        select c.*,l.id l_id,l.realname l_name,t.id t_id,t.realname t_name,
+        ci.id ci_id ,ci.name ci_name ,cr.id cr_id , cr.name cr_name
+        from course c
+        LEFT JOIN employee l ON c.lecturer_id = l.id
+        LEFT JOIN employee t ON t.id = c.teacher_id
+        LEFT JOIN classinfo ci ON ci.id = c.class_id
+        LEFT JOIN classroom cr ON cr.id = c.classroom_id
+        <include refid="where_sql"/>
+        limit #{start},#{rows}
+    </select>
+  
+  <!-- 根据课程名称查询对应的id(chenming) -->
+  <select id="selectIdByName" resultMap="BaseResultMap">
+  select id from course where name=#{courseName}
+  </select>
+  <!-- (chenming) -->
+</mapper>

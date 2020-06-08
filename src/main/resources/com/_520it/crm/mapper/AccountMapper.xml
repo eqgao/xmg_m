@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.AccountMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Account">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="num" property="num" jdbcType="DECIMAL"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from account
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insertBatch" useGeneratedKeys="true" keyProperty="id">
+        insert into account (num)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.num, jdbcType=DECIMAL})
+        </foreach>
+    </insert>
+
+    <insert id="updateBatch" useGeneratedKeys="true" keyProperty="id">
+        replace into account (id, num)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id}, #{item.num, jdbcType=DECIMAL})
+        </foreach>
+    </insert>
+
+    <insert id="insert" parameterType="com._520it.crm.domain.Account" useGeneratedKeys="true" keyProperty="id">
+    insert into account (num)
+    values (#{num,jdbcType=DECIMAL})
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Account">
+    update account
+    set num = #{num,jdbcType=DECIMAL}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select id, num
+    from account
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select id, num
+    from account
+  </select>
+
+    <update id="addAccount">
+      update account set num = num + #{money}
+        where id = 1
+    </update>
+
+    <update id="subtractAccount">
+        update account set num = num - #{money}
+        where id = 1
+    </update>
+    <select id="select" resultMap="BaseResultMap">
+        select id, num
+        from account
+        where id = 1
+    </select>
+
+</mapper>

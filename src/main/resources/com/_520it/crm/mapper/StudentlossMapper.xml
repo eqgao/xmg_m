@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.StudentLossMapper" >
+  <resultMap id="BaseResultMap" type="com._520it.crm.domain.StudentLoss" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="studentName" property="studentname" jdbcType="VARCHAR" />
+    <result column="qq" property="qq" jdbcType="VARCHAR" />
+    <result column="tel" property="tel" jdbcType="VARCHAR" />
+    <result column="classinfoName" property="classinfoname" jdbcType="VARCHAR" />
+    <result column="lostTime" property="losttime" jdbcType="DATE" />
+    <result column="handler" property="handler" jdbcType="VARCHAR" />
+    <result column="cause" property="cause" jdbcType="VARCHAR" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from studentloss
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com._520it.crm.domain.StudentLoss" useGeneratedKeys="true" keyProperty="id" >
+    insert into studentloss (studentName, qq, tel, 
+      classinfoName, lostTime, handler, 
+      cause)
+    values (#{studentname,jdbcType=VARCHAR}, #{qq,jdbcType=VARCHAR}, #{tel,jdbcType=VARCHAR}, 
+      #{classinfoname,jdbcType=VARCHAR}, #{losttime,jdbcType=DATE}, #{handler,jdbcType=VARCHAR}, 
+      #{cause,jdbcType=VARCHAR})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.StudentLoss" >
+    update studentloss
+    set studentName = #{studentname,jdbcType=VARCHAR},
+      qq = #{qq,jdbcType=VARCHAR},
+      tel = #{tel,jdbcType=VARCHAR},
+      classinfoName = #{classinfoname,jdbcType=VARCHAR},
+      lostTime = #{losttime,jdbcType=DATE},
+      handler = #{handler,jdbcType=VARCHAR},
+      cause = #{cause,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, studentName, qq, tel, classinfoName, lostTime, handler, cause
+    from studentloss
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, studentName, qq, tel, classinfoName, lostTime, handler, cause
+    from studentloss
+  </select>
+  <sql id="sql_where">
+  	<where>
+  		<if test="keyword != null and keyword != ''">
+  			( 
+  				studentName like concat ('%',#{keyword},'%') or
+  				handler like concat ('%',#{keyword},'%') or
+  				qq like concat ('%',#{keyword},'%') or
+  				tel like concat ('%',#{keyword},'%')				
+  				)
+  		</if>
+  		<if test="beginDate != null ">
+  			and ( 
+  				losttime &gt;= #{beginDate}
+  				)
+  		</if>
+  		<if test="endDate != null ">
+  			and ( 
+  				losttime &lt;= #{endDate}
+  				)
+  		</if>
+  		<if test="classinfoName != null">
+            	and classinfoname=#{classinfoName}
+        </if>
+  	</where>
+  </sql>
+  <select id="queryPageCount" resultType="long">
+  	select count(id) from studentloss
+  	<include refid="sql_where"></include>
+  </select>
+  <select id="queryPageResult" resultMap="BaseResultMap" >
+  	select * from studentloss 
+  	<include refid="sql_where"></include>
+  	limit #{start},#{rows}
+  </select>
+</mapper>

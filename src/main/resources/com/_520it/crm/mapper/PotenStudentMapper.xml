@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.PotenStudentMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.PotenStudent">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="qq" property="qq" jdbcType="VARCHAR"/>
+        <result column="tel" property="tel" jdbcType="VARCHAR"/>
+        <result column="lastTime" property="lastTime" jdbcType="DATE"/>
+        <result column="nextTime" property="nextTime" jdbcType="DATE"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+
+        <!--对象关联字段 -->
+        <!--字典关联 -->
+        <association property="source" columnPrefix="so_" javaType="com._520it.crm.domain.DictionaryItem">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+        <association property="status" columnPrefix="st_" javaType="com._520it.crm.domain.DictionaryItem">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+        <association property="level" javaType="com._520it.crm.domain.DictionaryItem" columnPrefix="l_">
+            <id column="id" property="id"></id>
+            <result column="name" property="name"></result>
+        </association>
+        <!--课程表关联 -->
+        <association property="course" columnPrefix="c_" javaType="com._520it.crm.domain.Course">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+
+        <!--员工关联 -->
+        <association property="employee" javaType="com._520it.crm.domain.Employee"
+                     columnPrefix="e_">
+            <id column="id" property="id"/>
+            <result column="realname" property="realname"/>
+        </association>
+
+        <association property="studentInfo"
+                     javaType="com._520it.crm.domain.StudentInfo">
+            <id property="id" column="i_id"/>
+            <result property="age" column="i_age"/>
+            <result property="gender" column="i_gender"/>
+            <result property="school" column="i_school"/>
+            <result property="major" column="i_major"/>
+            <result property="education" column="i_education"/>
+            <result property="computerOrNot" column="i_computerOrNot"/>
+            <result property="profession" column="i_profession"/>
+            <result property="salary" column="i_salary"/>
+            <result property="image" column="i_image"/>
+            <association property="address" javaType="com._520it.crm.domain.Address">
+                <id property="id" column="a_id"/>
+                <result property="code" column="a_code"/>
+                <result property="name" column="a_name"/>
+            </association>
+        </association>
+
+    </resultMap>
+
+    <!--参数 -->
+    <sql id="param_sql">
+        p.*,
+        e.id e_id,e.realname e_realname,
+        c.id c_id,c.name c_name,
+        so.id so_id,so.name so_name,
+        l.id l_id,l.name l_name,
+        st.id st_id,st.name st_name,
+        i.id i_id,i.age i_age,i.gender i_gender,i.school i_school,i.major i_major,i.education i_education,
+        i.computerOrNot i_computerOrNot,i.profession i_profession,i.salary i_salary,i.image i_image,
+        a.id a_id,a.code a_code,a.name a_name
+    </sql>
+    <!--表 -->
+    <sql id="table_sql">
+        potenstudent p
+        join employee e on p.employee_id = e.id
+        join course c on p.course_id = c.id
+        join dictionaryitem so on p.source = so.id
+        join dictionaryitem l on p.level = l.id
+        join dictionaryitem st on p.status = st.id
+         left join studentinfo i on p.studentinfo_id = i.id
+          left join address a on i.address_id = a.id
+    </sql>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from potenstudent
+        where id = #{id,jdbcType=BIGINT}
+        </delete>
+
+    <insert id="insert" parameterType="com._520it.crm.domain.PotenStudent"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into potenstudent
+        (name, qq, tel,
+        employee_id, lastTime, nextTime,
+        source, level, course_id,
+        remark, status,studentinfo_id)
+        values (#{name,jdbcType=VARCHAR}, #{qq,jdbcType=VARCHAR},
+        #{tel,jdbcType=VARCHAR},
+        #{employee.id,jdbcType=BIGINT}, #{lastTime,jdbcType=DATE}, #{nextTime,jdbcType=DATE},
+        #{source.id,jdbcType=BIGINT}, #{level.id,jdbcType=BIGINT},
+        #{course.id,jdbcType=BIGINT},
+        #{remark,jdbcType=VARCHAR}, #{status.id,jdbcType=INTEGER},
+        #{studentInfo.id}
+        )
+        </insert>
+
+    <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.PotenStudent">
+update potenstudent
+set name = #{name,jdbcType=VARCHAR},
+qq = #{qq,jdbcType=VARCHAR},
+tel = #{tel,jdbcType=VARCHAR},
+employee_id = #{employee.id,jdbcType=BIGINT},
+lastTime = #{lastTime,jdbcType=DATE},
+nextTime = #{nextTime,jdbcType=DATE},
+source = #{source.id,jdbcType=BIGINT},
+level = #{level.id,jdbcType=BIGINT},
+course_id = #{course.id,jdbcType=BIGINT},
+remark = #{remark,jdbcType=VARCHAR},
+status = #{status.id,jdbcType=INTEGER},
+studentinfo_id=#{studentInfo.id}
+where id = #{id,jdbcType=BIGINT}
+</update>
+
+    <!--跟进状态改为跟进-->
+    <update id="follow">
+        update
+        potenstudent
+        set
+        status = 11
+        where id = #{id}
+    </update>
+
+
+    <!--好感度更改-->
+    <update id="changeLevel">
+        update
+        potenstudent
+        set
+        level = #{lv}
+        where id = #{id}
+    </update>
+
+    <!--潜在学员流失-->
+    <update id="changeStatus">
+        update
+        potenstudent
+        set
+        status = #{statusId}
+        where id = #{potenStudentId}
+    </update>
+    <!--=========================================-->
+
+    <!--潜在学员流失-->
+    <update id="changeState">
+        update
+        potenstudent
+        set
+        status = 17
+        where id = #{id}
+    </update>
+    <!--=========================================-->
+    <!--潜在学员转正-->
+    <update id="formal">
+        update
+        potenstudent
+        set
+        status = 12
+        where id = #{id}
+    </update>
+    <!--=========================================-->
+
+    <!--移交后负责人更变-->
+    <update id="updateEmp">
+        update
+        potenstudent
+        set
+        employee_id = #{employee.id}
+        where id = #{id}
+    </update>
+    <!--=========================================-->
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap"
+            parameterType="java.lang.Long">
+        select
+        <include refid="param_sql"/>
+        from
+        <include refid="table_sql"/>
+        where p.id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        select
+        <include refid="param_sql"/>
+        from
+        <include refid="table_sql"/>
+    </select>
+
+
+    <!--高级查询 -->
+    <sql id="where_sql">
+        <where>
+            <if test="keyword!=null">
+                and (
+                p.name like concat('%',#{keyword},'%')
+                or
+                p.qq like concat('%',#{keyword},'%')
+                or
+                p.tel like concat('%',#{keyword},'%')
+                )
+            </if>
+            <!--========================================================================================================-->
+            <if test="statusId!=null">
+                and p.status = #{statusId}
+            </if>
+            <if test="statusId==null or statusId==''">
+                and p.status != 12
+                and p.status != 17
+                and p.status != 18
+            </if>
+            <!--========================================================================================================-->
+        </where>
+    </sql>
+    <!-- 查询总结果数 -->
+    <select id="queryPageCount" resultType="long">
+        select
+        count(p.id)
+        from
+        potenstudent p
+        <include refid="where_sql"/>
+    </select>
+
+    <!-- 查询结果集 -->
+    <select id="queryPageResult" resultMap="BaseResultMap">
+        select
+        <include refid="param_sql"/>
+        from
+        <include refid="table_sql"/>
+        <include refid="where_sql"/>
+        limit #{start},#{rows}
+    </select>
+
+    <!-- 陈明开始 -->
+    <!--不知道是什么-->
+    <resultMap type="com._520it.crm.domain.PotenStudent" id="listResult">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="qq" column="qq"/>
+        <result property="tel" column="tel"/>
+    </resultMap>
+    <select id="list" resultMap="listResult">
+		select
+		id,name,qq,tel
+		from potenstudent
+	</select>
+    <update id="change">
+		update potenstudent set status = 11 where id = #{id}
+	</update>
+    <select id="selectStatus" resultMap="BaseResultMap">
+        select
+        <include refid="param_sql"/>
+        from
+        <include refid="table_sql"/>
+        where st.id = #{id}
+    </select>
+    <select id="selectPpotenStudentByTel" resultMap="BaseResultMap">
+        select id,name,qq,tel
+        from potenstudent
+        where tel = #{tel}
+    </select>
+
+    <!-- 陈明结束 -->
+</mapper>

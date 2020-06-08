@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.StudentMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Student">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="qq" property="qq" jdbcType="VARCHAR"/>
+        <result column="tel" property="tel" jdbcType="VARCHAR"/>
+        <result column="tuition" property="tuition" jdbcType="DECIMAL"/>
+        <result column="status" property="status" jdbcType="INTEGER"/>
+        <result column="entranceTime" property="entrancetime" jdbcType="DATE"/>
+        <result column="feesStatus" property="feesstatus" jdbcType="INTEGER"/>
+        <result column="paytime" property="paytime"/>
+        <result column="remark" property="remark"/>
+        <result column="isEmployee" property="isEmployee"/>
+        <!--销售人员 -->
+        <association property="employee" javaType="com._520it.crm.domain.Employee">
+            <result property="id" column="e_id"/>
+            <result property="realname" column="e_realname"/>
+        </association>
+        <!-- 班级  -->
+        <association property="classinfo" javaType="Classinfo">
+            <result property="id" column="cl_id"/>
+            <result property="name" column="cl_name"/>
+            <result property="totalMoney" column="cl_totalMoney"/>
+        </association>
+        <!-- 课程 -->
+        <association property="course" javaType="com._520it.crm.domain.Course">
+            <result property="id" column="co_id"/>
+            <result property="name" column="co_name"/>
+        </association>
+        <association property="studentinfo" javaType="com._520it.crm.domain.StudentInfo">
+            <result property="id" column="siid"/>
+            <result property="age" column="siage"/>
+            <result property="computerOrNot" column="sicomputerOrNot"/>
+            <result property="education" column="sieducation"/>
+            <result property="computerOrNot" column="sicomputerOrNot"/>
+            <result property="gender" column="sigender"/>
+            <result property="salary" column="sisalary"/>
+            <result property="major" column="simajor"/>
+            <result property="profession" column="siprofession"/>
+            <result property="school" column="sischool"/>
+            <association property="address" javaType="com._520it.crm.domain.Address">
+                <result property="id" column="aid"/>
+                <result property="name" column="aname"/>
+            </association>
+        </association>
+    </resultMap>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from student
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+
+    <insert id="insert" parameterType="com._520it.crm.domain.Student" useGeneratedKeys="true" keyProperty="id">
+    insert into student (name, qq, tel,
+      employee_id, 
+      tuition, status, entranceTime,
+      feesStatus,remark,paytime,classinfo_id,course_id,studentinfo_id)
+    values (#{name,jdbcType=VARCHAR}, #{qq,jdbcType=VARCHAR}, #{tel,jdbcType=VARCHAR},
+      #{employee.id,jdbcType=BIGINT}, 
+      #{tuition,jdbcType=DECIMAL}, #{status,jdbcType=INTEGER}, #{entrancetime,jdbcType=DATE},
+      #{feesstatus,jdbcType=INTEGER},
+      #{remark},#{paytime},#{classinfo.id},#{course.id},#{studentinfo.id}    
+      )
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Student">
+        update student
+        <set>
+            <if test="name!=null">
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="qq!=null">
+                qq = #{qq,jdbcType=VARCHAR},
+            </if>
+            <if test="tel!=null">
+                tel = #{tel,jdbcType=VARCHAR},
+            </if>
+            <if test="tuition!=null">
+                tuition = #{tuition,jdbcType=DECIMAL},
+            </if>
+            <if test="entrancetime!=null">
+                entranceTime = #{entrancetime,jdbcType=DATE},
+            </if>
+            <if test="remark!=null">
+                remark=#{remark},
+            </if>
+            <if test="paytime!=null">
+                paytime=#{paytime},
+            </if>
+            <if test="classinfo!=null">
+                classinfo_id=#{classinfo.id},
+            </if>
+            <if test="feesstatus!=null and feesstatus!=-1">
+                feesstatus=#{feesstatus},
+            </if>
+            <if test="course!=null">
+                course_id=#{course.id}
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select id, name, qq, tel, employee_id, tuition, status, 
+    entranceTime, feesStatus,remark,paytime,classinfo_id,course_id,studentinfo_id,isEmployee
+    from student
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+   		select s.*,e.id e_id,e.username e_username,
+        cl.id cl_id,cl.name cl_name,cl.totalMoney cl_totalMoney,
+        co.id co_id,co.name co_name
+        from student s
+        left join employee e on s.employee_id = e.id
+        left join classinfo cl on s.classinfo_id=cl.id
+        left join course co on s.course_id=co.id
+  </select>
+    <select id="selectBySid" resultMap="BaseResultMap">
+  	select s.*,e.id e_id,e.realname e_realname,cl.id cl_id,cl.name cl_name,co.id co_id,co.name co_name
+        from student s
+        left join employee e on s.employee_id = e.id
+        left join classinfo cl on s.classinfo_id=cl.id
+        left join course co on s.course_id=co.id
+  	where s.id=#{Sid}
+  </select>
+    <sql id="sql_where">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (
+                s.name like concat ('%',#{keyword},'%') or
+                s.qq like concat ('%',#{keyword},'%') or
+                s.tel like concat ('%',#{keyword},'%') or
+                e.realname like concat ('%',#{keyword},'%') or
+                cl.name like concat ('%',#{keyword},'%') or
+                co.name like concat ('%',#{keyword},'%')
+                )
+            </if>
+            <if test="status >= 0">
+                and s.status = #{status}
+            </if>
+            <if test="feesstatus >=0">
+            	and s.feesstatus = #{feesstatus}
+            </if>
+            <if test="beginDate != null ">
+                and (
+                s.entrancetime &gt;= #{beginDate}
+                )
+            </if>
+            <if test="endDate != null ">
+                and (
+                s.entrancetime &lt;= #{endDate}
+                )
+            </if>
+            <if test="classinfoId != null">
+                and cl.id=#{classinfoId}
+            </if>
+        </where>
+    </sql>
+    <select id="queryPageCount" resultType="long">
+        select count(s.id) from student s
+        left join employee e on s.employee_id = e.id
+        left join classinfo cl on s.classinfo_id=cl.id
+        left join course co on s.course_id=co.id
+        left join studentinfo si on si.id = s.studentinfo_id
+        left join address a on a.id = si.address_id
+        <include refid="sql_where"></include>
+    </select>
+    <select id="queryPageResult" resultMap="BaseResultMap">
+        select s.*,e.id e_id,e.realname e_realname,
+        cl.id cl_id,cl.name cl_name,cl.totalMoney cl_totalMoney,
+        co.id co_id,co.name co_name,
+        si.id siid,si.computerOrNot sicomputerOrNot,si.education sieducation,
+        si.gender sigender,si.salary sigender,si.salary sisalary,
+        si.major simajor,si.profession siprofession,
+        a.id aid ,a.name aname
+        from student s
+        left join employee e on s.employee_id = e.id
+        left join classinfo cl on s.classinfo_id=cl.id
+        left join course co on s.course_id=co.id
+        left join studentinfo si on si.id = s.studentinfo_id
+        left join address a on a.id = si.address_id
+        <include refid="sql_where"></include>
+        limit #{start},#{rows}
+    </select>
+    <update id="changeState" parameterType="long">
+  	update student set status = 3 where id = #{sId}
+  </update>
+    <update id="changeDrop" parameterType="long">
+  	update student set status = 2 where id = #{sId}
+  </update>
+    <!-- 缴费后改变状态 -->
+    <update id="changefeesState" parameterType="long">
+  		update student set feesstatus = 2 where id = #{id}
+  	</update>
+  <!-- 转班 -->
+  <update id="updateClassinfo" >
+  	update student set Classinfo_id = #{cid} where id=#{sid}
+  </update>
+  <!-- 学员毕业后改变状态 -->
+  <update id="changeGraduiteStatus" parameterType="long">
+  	update student set status = 4 where id = #{id}
+  </update>
+</mapper>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.ExpendMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Expend">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="payTime" property="paytime" jdbcType="DATE"/>
+        <result column="item" property="item" jdbcType="VARCHAR"/>
+        <result column="bills" property="bills" jdbcType="VARCHAR"/>
+        <result column="amount" property="amount" jdbcType="DECIMAL"/>
+        <result column="auditorTime" property="auditortime" jdbcType="DATE"/>
+        <result column="status" property="status" jdbcType="INTEGER"/>
+        <association property="operator" javaType="Employee" columnPrefix="o_">
+            <result property="id" column="id"/>
+            <result property="realname" column="realname"/>
+        </association>
+        <association property="auditor" javaType="Employee" columnPrefix="a_">
+            <result property="id" column="id"/>
+            <result property="realname" column="realname"/>
+        </association>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from expend
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com._520it.crm.domain.Expend" useGeneratedKeys="true" keyProperty="id">
+    insert into expend (payTime, item, bills, 
+      amount, operator_id, auditor_id, 
+      auditorTime, status)
+    values (#{paytime,jdbcType=DATE}, #{item,jdbcType=VARCHAR}, #{bills,jdbcType=VARCHAR}, 
+      #{amount,jdbcType=DECIMAL}, #{operator.id,jdbcType=BIGINT}, #{auditor.id,jdbcType=BIGINT}, 
+      #{auditortime,jdbcType=DATE}, #{status,jdbcType=INTEGER})
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Expend">
+    update expend
+    set payTime = #{paytime,jdbcType=DATE},
+      item = #{item,jdbcType=VARCHAR},
+      bills = #{bills,jdbcType=VARCHAR},
+      amount = #{amount,jdbcType=DECIMAL},
+      operator_id = #{operator.id,jdbcType=BIGINT},
+      auditor_id = #{auditor.id,jdbcType=BIGINT},
+      auditorTime = #{auditortime,jdbcType=DATE},
+      status = #{status,jdbcType=INTEGER}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+    <update id="auditor" parameterType="com._520it.crm.domain.Expend">
+        update expend
+        set
+        auditor_id = #{auditor.id,jdbcType=BIGINT},
+        auditorTime = #{auditortime,jdbcType=DATE},
+        status = #{status}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select id, payTime, item, bills, amount, operator_id, auditor_id, auditorTime, status
+    from expend
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select id, payTime, item, bills, amount, operator_id, auditor_id, auditorTime, status
+    from expend
+  </select>
+
+    <sql id="where_sql">
+        <where>
+            <if test="item!=null">
+                e.item like concat('%',#{item},'%')
+            </if>
+            <if test="bills!=null">
+                and e.bills like concat('%',#{bills},'%')
+            </if>
+            <if test="startTime!=null">
+                and e.upgradetime &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and e.upgradetime &lt;= #{endTime}
+            </if>
+            <if test="status!=null and status!=-1">
+                and e.status = #{status}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 查询总结果数 -->
+    <select id="queryPageCount" resultType="long">
+        select count(*)
+        from expend e
+        left join employee o on o.id = e.operator_id
+        left join employee a on a.id = e.auditor_id
+        <include refid="where_sql"/>
+    </select>
+
+    <!-- 查询结果集 -->
+    <select id="queryPageResult" resultMap="BaseResultMap">
+        select e.*,
+        o.id o_id , o.realname o_realname,
+        a.id a_id , a.realname a_realname
+        from expend e
+        left join employee o on o.id = e.operator_id
+        left join employee a on a.id = e.auditor_id
+        <include refid="where_sql"/>
+        limit #{start},#{rows}
+    </select>
+
+</mapper>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.PotenClientMapper">
+	<resultMap id="BaseResultMap" type="com._520it.crm.domain.PotenClient">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="putTime" property="putTime" jdbcType="DATE" />
+		<result column="remark" property="remark" jdbcType="VARCHAR" />
+
+		<association property="potenStudent" javaType="PotenStudent">
+			<result property="id" column="pid" />
+			<result property="name" column="pname" />
+			<result property="qq" column="pqq" />
+			<result property="tel" column="ptel" />
+			<result property="remark" column="premark" />
+			<result property="lastTime" column="plastTime" />
+			
+			<association property="source" 
+				javaType="com._520it.crm.domain.DictionaryItem">
+				<id column="soid" property="id" />
+				<result column="soname" property="name" />
+			</association>
+			
+			<association property="status" 
+				javaType="com._520it.crm.domain.DictionaryItem">
+				<id column="stid" property="id" />
+				<result column="stname" property="name" />
+			</association>
+			
+			<association property="level"
+				javaType="com._520it.crm.domain.DictionaryItem" >
+				<id column="lid" property="id"></id>
+				<result column="lname" property="name"></result>
+			</association>
+			
+			<!--课程表关联 -->
+			<association property="course" 
+				javaType="com._520it.crm.domain.Course">
+				<id column="cid" property="id" />
+				<result column="cname" property="name" />
+			</association>
+		</association>
+
+		<association property="employee" javaType="Employee"
+			columnPrefix="e_">
+			<result property="id" column="id" />
+			<result property="username" column="username" />
+			<result property="realname" column="realname" />
+		</association>
+	</resultMap>
+	
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+		delete from
+		potenclient
+		where id = #{id,jdbcType=BIGINT}
+	</delete>
+	<insert id="insert" parameterType="com._520it.crm.domain.PotenClient"
+		useGeneratedKeys="true" keyProperty="id">
+		insert into potenclient
+		(potenstudent_id, employee_id, putTime,
+		remark)
+		values
+		(#{potenStudent.id,jdbcType=BIGINT}, #{employee.id,jdbcType=BIGINT},
+		#{putTime,jdbcType=DATE},
+		#{remark,jdbcType=VARCHAR})
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.PotenClient">
+		update potenclient
+		set potenstudent_id = #{potenstudent.id,jdbcType=BIGINT},
+		employee_id =
+		#{employee.id,jdbcType=BIGINT},
+		putTime = #{putTime,jdbcType=DATE},
+		remark = #{remark,jdbcType=VARCHAR}
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+
+	<!-- <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long"> 
+		select id, potenstudent_id, employee_id, putTime, remark from potenclient 
+		where id = #{id,jdbcType=BIGINT} </select> -->
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Long">
+		select
+		<include refid="base_column" />
+		from
+		<include refid="base_table" />
+		where pc.id = #{id,jdbcType=BIGINT}
+	</select>
+
+
+	<select id="selectAll" resultMap="BaseResultMap">
+		select id, potenstudent_id,
+		employee_id, putTime, remark
+		from potenclient
+	</select>
+
+	<sql id="base_where">
+		<where>
+			<if test="keyword != null and keyword != ''">
+				and (
+				p.name like concat ('%',#{keyword},'%') or
+				p.tel
+				like concat ('%',#{keyword},'%') or
+				e.username like concat
+				('%',#{keyword},'%')
+				)
+			</if>
+			<if test="id!=null">
+  			and st.id = #{id}
+  		</if>
+		</where>
+	</sql>
+	<!-- <sql id="base_column">
+		pc.id,pc.putTime,pc.remark,ps.id ps_id,ps.name
+		ps_name,ps.qq ps_qq,ps.tel ps_tel,ps.status ps_status,
+		ps.level
+		ps_level,e.id
+		e_id,e.username e_username,e.realname e_realname
+	</sql> -->
+	<sql id="base_column">
+	pc.id,pc.putTime, pc.remark,
+		p.id pid,p.name pname,p.qq pqq,p.tel ptel,
+		p.remark premark,p.level plevel,p.status pstatus,p.course_id pcourse,
+        e.id e_id,e.realname e_realname,
+        c.id cid,c.name cname,
+        so.id soid,so.name soname,
+        l.id lid,l.name lname,
+        st.id stid,st.name stname
+	</sql>
+	<!-- <sql id="base_table">
+		potenclient pc left join potenstudent ps on
+		pc.potenstudent_id = ps.id
+		left join employee e on pc.employee_id =
+		e.id
+	</sql> -->
+	<sql id="base_table">
+	potenclient pc join 
+		potenstudent p on pc.potenstudent_id = p.id
+        join employee e on p.employee_id = e.id
+        join course c on p.course_id = c.id
+        join dictionaryitem so on p.source = so.id
+        join dictionaryitem l on p.level = l.id
+        join dictionaryitem st on p.status = st.id
+	</sql>
+	<select id="getTotal" resultType="long">
+		select count(pc.id)
+		from
+		<include refid="base_table" />
+		<include refid="base_where" />
+	</select>
+	<select id="query" resultMap="BaseResultMap">
+		select
+		<include refid="base_column" />
+		from
+		<include refid="base_table" />
+		<include refid="base_where" />
+		limit #{start},#{rows}
+	</select>
+</mapper>

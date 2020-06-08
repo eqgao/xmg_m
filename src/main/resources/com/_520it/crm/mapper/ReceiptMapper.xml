@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.ReceiptMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Receipt">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="receiptTime" property="receipttime" jdbcType="DATE"/>
+        <result column="receiptAmount" property="receiptamount" jdbcType="DECIMAL"/>
+        <result column="bills" property="bills" jdbcType="VARCHAR"/>
+        <result column="receipt" property="receipt" jdbcType="VARCHAR"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="status" property="status"/>
+        <association property="stu" javaType="Student">
+            <result property="id" column="sid"/>
+            <result property="name" column="sname"/>
+            <result property="tuition" column="stuition"/>
+            <association property="employee" javaType="Employee">
+                <result property="id" column="eid"/>
+                <result property="realname" column="erealname"/>
+            </association>
+            <association property="classinfo" javaType="Classinfo">
+                <result property="id" column="clid"/>
+                <result property="name" column="clname"/>
+                <result property="totalMoney" column="cltotalMoney"/>
+            </association>
+            <association property="course" javaType="Course">
+                <result property="id" column="coid"/>
+                <result property="name" column="coname"/>
+            </association>
+        </association>
+        <association property="auditor" javaType="Employee">
+            <result property="id" column="aid"/>
+            <result property="realname" column="arealname"/>
+        </association>
+
+
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from receipt
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+    <insert id="insert" parameterType="com._520it.crm.domain.Receipt" useGeneratedKeys="true" keyProperty="id">
+        insert into receipt (student_id, receiptTime, receiptAmount,
+          bills, receipt, auditor_id,
+          remark)
+        values (#{stu.id,jdbcType=BIGINT}, #{receipttime,jdbcType=DATE}, #{receiptamount,jdbcType=DECIMAL},
+          #{bills,jdbcType=VARCHAR}, #{receipt,jdbcType=VARCHAR}, #{auditor.id,jdbcType=BIGINT},
+          #{remark,jdbcType=VARCHAR})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Receipt">
+        update receipt
+        <set>
+            <if test="stu!=null">
+                student_id = #{stu.id,jdbcType=BIGINT},
+            </if>
+            <if test="receipttime!=null">
+                receiptTime = #{receipttime,jdbcType=DATE},
+            </if>
+            <if test="receiptamount!=null">
+                receiptAmount = #{receiptamount,jdbcType=DECIMAL},
+            </if>
+            <if test="bills!=null">
+                bills = #{bills,jdbcType=VARCHAR},
+            </if>
+            <if test="receipt!=null">
+                receipt = #{receipt,jdbcType=VARCHAR},
+            </if>
+            <if test="auditor!=null">
+                auditor_id = #{auditor.id,jdbcType=BIGINT},
+            </if>
+            <if test="remark!=null">
+                remark = #{remark,jdbcType=VARCHAR},
+            </if>
+            <if test="status!=null">
+                status = #{status,jdbcType=VARCHAR}
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select r.* ,
+        s.id sid , s.name sname,s.tuition stuition,
+        e.id eid ,e.realname erealname,
+        a.id aid ,a.realname arealname,
+        cl.id clid ,cl.name clname,cl.totalMoney cltotalMoney,
+        co.id coid ,co.name coname
+        from receipt r
+        left join student s on s.id = r.student_id
+        left join employee e on s.employee_id = e.id
+        left join employee a on r.auditor_id = a.id
+        left join classinfo cl on cl.id = s.classinfo_id
+        left join course co on co.id = s.course_id
+        where r.id = #{id,jdbcType=BIGINT}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        select id, student_id, receiptTime, receiptAmount, bills, receipt, auditor_id, remark
+        from receipt
+    </select>
+
+    <sql id="where_sql">
+        <where>
+            <if test="stuName!=null">
+                s.name like concat('%',#{stuName},'%')
+            </if>
+            <if test="auditorName!=null">
+                and a.realname like concat('%',#{auditorName},'%')
+            </if>
+            <if test="startTime!=null">
+                and r.receipttime &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and r.receipttime &lt;= #{endTime}
+            </if>
+            <if test="status!=null and status!=-1">
+                and r.status = #{status}
+            </if>
+        </where>
+    </sql>
+
+    <select id="queryPageCount" resultType="long">
+        select count(*)
+        from receipt r
+        left join student s on s.id = r.student_id
+        left join employee e on s.employee_id = e.id
+        left join employee a on r.auditor_id = a.id
+        left join classinfo cl on cl.id = s.classinfo_id
+        left join course co on co.id = s.course_id
+        <include refid="where_sql"/>
+    </select>
+
+    <select id="queryPageResult" resultMap="BaseResultMap">
+        select r.* ,
+        s.id sid , s.name sname,
+        e.id eid ,e.realname erealname,
+        a.id aid ,a.realname arealname,
+        cl.id clid ,cl.name clname,
+        co.id coid ,co.name coname
+        from receipt r
+        left join student s on s.id = r.student_id
+        left join employee e on s.employee_id = e.id
+        left join employee a on r.auditor_id = a.id
+        left join classinfo cl on cl.id = s.classinfo_id
+        left join course co on co.id = s.course_id
+        <include refid="where_sql"/>
+        limit #{start},#{rows}
+    </select>
+</mapper>

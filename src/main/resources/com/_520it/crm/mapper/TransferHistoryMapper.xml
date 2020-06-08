@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.TransferHistoryMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.TransferHistory">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="transTime" property="transTime" jdbcType="DATE"/>
+        <result column="cause" property="cause" jdbcType="VARCHAR"/>
+        <result column="imgUrl" property="imgUrl"/>
+
+        <!--原负责人-->
+        <association property="oldEmployee" columnPrefix="o_" javaType="com._520it.crm.domain.Employee">
+            <id column="id" property="id"/>
+            <result column="realname" property="realname"/>
+        </association>
+        <!--新负责人-->
+        <association property="newEmployee" columnPrefix="n_" javaType="com._520it.crm.domain.Employee">
+            <id column="id" property="id"/>
+            <result column="realname" property="realname"/>
+        </association>
+        <!--学员-->
+        <association property="potenStudent"
+                     javaType="com._520it.crm.domain.PotenStudent"
+                     select="com.gdut.society.mapper.PotenStudentMapper.selectByPrimaryKey"
+                     column="potenStudent_id" fetchType="eager">
+        </association>
+    </resultMap>
+
+    <!--参数-->
+    <sql id="param_sql">
+        t.*,
+        o.id o_id,o.realname o_realname,
+        n.id n_id,n.realname n_realname
+        <!--p.id p_id,p.name p_name,p.qq p_qq,p.tel p_tel,p.likeLevel p_likeLevel-->
+    </sql>
+    <!--表-->
+    <sql id="table_sql">
+        transferhistory t
+        join employee o on t.oldEmployee_id = o.id
+        join employee n on t.newEmployee_id = n.id
+        <!--join potenStudent p on t.potenStudent_id = p.id-->
+    </sql>
+    <!--条件-->
+    <sql id="where_sql">
+        <where>
+
+        </where>
+    </sql>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from transferhistory
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+
+    <insert id="insert" parameterType="com._520it.crm.domain.TransferHistory" useGeneratedKeys="true" keyProperty="id">
+    insert into transferhistory
+    (potenStudent_id, oldEmployee_id, transTime,
+      cause, newEmployee_id,imgUrl)
+    values (#{potenStudent.id,jdbcType=BIGINT}, #{oldEmployee.id,jdbcType=BIGINT}, #{transTime,jdbcType=DATE},
+      #{cause,jdbcType=VARCHAR}, #{newEmployee.id,jdbcType=BIGINT},#{imgUrl})
+  </insert>
+
+    <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.TransferHistory">
+    update transferhistory
+    set potenStudent_id = #{potenStudent.id,jdbcType=BIGINT},
+      oldEmployee_id = #{oldEmployee.id,jdbcType=BIGINT},
+      transTime = #{transTime,jdbcType=DATE},
+      cause = #{cause,jdbcType=VARCHAR},
+      newEmployee_id = #{newEmployee.id,jdbcType=BIGINT},
+      imgUrl = #{imgUrl}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select
+    id, potenStudent_id, oldEmployee_id, transTime, cause, newEmployee_id,imgUrl
+    from
+    transferhistory
+    where
+    id = #{id,jdbcType=BIGINT}
+  </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+    select
+    id, potenStudent_id, oldEmployee_id, transTime, cause, newEmployee_id , imgUrl
+    from
+    transferhistory
+  </select>
+
+
+    <!-- 查询总结果数 -->
+    <select id="queryPageCount" resultType="long">
+        select
+        count(t.id)
+        from
+        <include refid="table_sql"/>
+        <include refid="where_sql"/>
+    </select>
+
+    <!-- 查询结果集 -->
+    <select id="queryPageResult" resultMap="BaseResultMap">
+        select
+        <include refid="param_sql"/>
+        from
+        <include refid="table_sql"/>
+        <include refid="where_sql"/>
+        limit #{start},#{rows}
+    </select>
+</mapper>

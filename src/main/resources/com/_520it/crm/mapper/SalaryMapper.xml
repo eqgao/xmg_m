@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.SalaryMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Salary">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="card" property="card" jdbcType="VARCHAR"/>
+        <result column="salary" property="salary" jdbcType="DECIMAL"/>
+        <result column="status" property="status" jdbcType="BIT"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <association property="employee" javaType="com._520it.crm.domain.Employee" columnPrefix="e_">
+            <result property="id" column="id"/>
+            <result column="realname" property="realname"/>
+        </association>
+    </resultMap>
+    <insert id="insert" parameterType="com._520it.crm.domain.Salary" useGeneratedKeys="true" keyProperty="id">
+    insert into salary (employee_id, card, salary, 
+      status, remark)
+    values (#{employee.id,jdbcType=BIGINT}, #{card,jdbcType=VARCHAR}, #{salary,jdbcType=DECIMAL},
+      #{status,jdbcType=BIT}, #{remark,jdbcType=VARCHAR})
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Salary">
+    update salary
+    set employee_id = #{employee.id,jdbcType=BIGINT},
+      card = #{card,jdbcType=VARCHAR},
+      salary = #{salary,jdbcType=DECIMAL},
+      status = #{status,jdbcType=BIT},
+      remark = #{remark,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select id, employee_id, card, salary, status, remark
+    from salary
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+
+
+
+    <sql id="where_sql">
+        <where>
+            <if test="keyword!=null and keyword!=''">
+                (e.realname like concat('%',#{keyword},'%')
+                or s.id LIKE concat('%',#{keyword},'%'))
+            </if>
+
+            <if test="id!=null">
+                and e.id = #{id}
+            </if>
+        </where>
+    </sql>
+    <select id="selectAll" resultMap="BaseResultMap">
+        select s.id, e.id as e_id,e.realname AS e_realname, card, salary, status, remark
+        from employee e
+
+         JOIN salary s ON s.employee_id = e.id
+        <include refid="where_sql"></include>
+    </select>
+</mapper>

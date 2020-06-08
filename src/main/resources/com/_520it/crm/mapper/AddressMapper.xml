@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.AddressMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Address">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="parent_code" property="parentCode" jdbcType="VARCHAR"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from address
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com._520it.crm.domain.Address" useGeneratedKeys="true" keyProperty="id">
+    insert into address (code, name, parent_code
+      )
+    values (#{code,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{parentCode,jdbcType=VARCHAR}
+      )
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Address">
+    update address
+    set code = #{code,jdbcType=VARCHAR},
+      name = #{name,jdbcType=VARCHAR},
+      parent_code = #{parentCode,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select id, code, name, parent_code
+    from address
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select id, code, name, parent_code
+    from address
+    where parent_code is null
+
+  </select>
+
+    <select id="selectByCode" resultMap="BaseResultMap">
+    select id, code, name, parent_code
+    from address
+    where parent_code = #{parentCode}
+  </select>
+
+    <select id="selectListByPrimaryKey" resultMap="BaseResultMap">
+    select id, code, name, parent_code
+    from address
+    where id = #{addressId}
+  </select>
+</mapper>

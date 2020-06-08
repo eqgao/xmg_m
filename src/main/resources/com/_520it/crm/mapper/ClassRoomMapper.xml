@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.ClassRoomMapper" >
+  <resultMap id="BaseResultMap" type="com._520it.crm.domain.ClassRoom" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="location" property="location" jdbcType="VARCHAR" />
+    <result column="num" property="num" jdbcType="INTEGER" />
+    <result column="status" property="status" jdbcType="BIT" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from classroom
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com._520it.crm.domain.ClassRoom" useGeneratedKeys="true" keyProperty="id" >
+    insert into classroom (name, location, num, 
+      status)
+    values (#{name,jdbcType=VARCHAR}, #{location,jdbcType=VARCHAR}, #{num,jdbcType=INTEGER}, 
+      #{status,jdbcType=BIT})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.ClassRoom" >
+    update classroom
+    set name = #{name,jdbcType=VARCHAR},
+      location = #{location,jdbcType=VARCHAR},
+      num = #{num,jdbcType=INTEGER},
+      status = #{status,jdbcType=BIT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, name, location, num, status
+    from classroom
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, name, location, num, status
+    from classroom
+  </select>
+
+  <sql id="where_sql">
+    <where>
+      <if test="keyword!=null and keyword!=''">
+        and (
+              name like concat("%",#{keyword},"%")
+              or location like concat("%",#{keyword},"%")
+            )
+      </if>
+    </where>
+  </sql>
+
+  <!-- 查询总结果数 -->
+  <select id="queryPageCount" resultType="long">
+    select count(*) from classroom
+    <include refid="where_sql"/>
+  </select>
+
+  <!-- 查询结果集 -->
+  <select id="queryPageResult" resultMap="BaseResultMap">
+    select * FROM  classroom
+    <include refid="where_sql"/>
+    limit #{start},#{rows}
+  </select>
+</mapper>

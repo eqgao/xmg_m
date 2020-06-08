@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.BigcustomerMapper" >
+  <resultMap id="BaseResultMap" type="com._520it.crm.domain.Bigcustomer" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="school" property="school" jdbcType="VARCHAR" />
+    <result column="area" property="area" jdbcType="VARCHAR" />
+    <result column="creatTime" property="creattime" jdbcType="DATE" />
+    <result column="tel" property="tel" jdbcType="VARCHAR" />
+    <result column="eamil" property="eamil" jdbcType="VARCHAR" />
+   
+    <result column="linkman" property="linkman" jdbcType="VARCHAR" />
+    <result column="tailAfter" property="tailafter" jdbcType="INTEGER" />
+    <result column="agreeOrnot" property="agreeornot" jdbcType="VARCHAR" />
+    <result column="starLevel" property="starlevel" jdbcType="VARCHAR" />
+    <association property="employee" javaType="com._520it.crm.domain.Employee" columnPrefix="e_">
+      <result column="id" property="id"></result>
+      <result column="realname" property="realname"></result>
+    </association>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from bigcustomer
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com._520it.crm.domain.Bigcustomer" useGeneratedKeys="true" keyProperty="id" >
+    insert into bigcustomer (school, area, creatTime, 
+      tel, eamil, employee_id, 
+      linkman, tailAfter, agreeOrnot, 
+      starLevel)
+    values (#{school,jdbcType=VARCHAR}, #{area,jdbcType=VARCHAR}, #{creattime,jdbcType=DATE}, 
+      #{tel,jdbcType=VARCHAR}, #{eamil,jdbcType=VARCHAR}, #{employee.id,jdbcType=BIGINT}, 
+      #{linkman,jdbcType=VARCHAR}, #{tailafter,jdbcType=INTEGER}, #{agreeornot,jdbcType=VARCHAR}, 
+      #{starlevel,jdbcType=VARCHAR})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Bigcustomer" >
+    update bigcustomer
+    set school = #{school,jdbcType=VARCHAR},
+      area = #{area,jdbcType=VARCHAR},
+      creatTime = #{creattime,jdbcType=DATE},
+      tel = #{tel,jdbcType=VARCHAR},
+      eamil = #{eamil,jdbcType=VARCHAR},
+      employee_id = #{employee.id,jdbcType=BIGINT},
+      linkman = #{linkman,jdbcType=VARCHAR},
+      tailAfter = #{tailafter,jdbcType=INTEGER},
+      agreeOrnot = #{agreeornot,jdbcType=VARCHAR},
+      starLevel = #{starlevel,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, school, area, creatTime, tel, eamil, employee_id, linkman, tailAfter, 
+    agreeOrnot, starLevel
+    from bigcustomer
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, school, area, creatTime, tel, eamil, employee_id, linkman, tailAfter, 
+    agreeOrnot, starLevel
+    from bigcustomer
+  </select>
+
+  <!--高级查询-->
+  <sql id="where_sql">
+    <where>
+        <if test="keyword!=null and keyword!=''">
+          and b.school like concat('%',#{keyword},'%')
+         OR   b.area like concat('%',#{keyword},'%')
+        </if>
+        <if test="startTime!=null">
+          and creatTime &gt;= #{startTime}
+        </if>
+        <if test="startTime!=null">
+          and creatTime &lt;= #{endTime}
+        </if>
+    </where>
+  </sql>
+
+  <!-- 查询总结果数 -->
+  <select id="queryPageCount" resultType="long">
+    select count(*) from bigcustomer b
+    <include refid="where_sql"/>
+  </select>
+
+  <!-- 查询结果集 -->
+  <select id="queryPageResult" resultMap="BaseResultMap">
+    select b.*,e.id e_id,e.realname e_realname FROM bigcustomer b LEFT JOIN  employee e ON  b.employee_id =  e.id
+    <include refid="where_sql"/>
+    limit #{start},#{rows}
+  </select>
+
+</mapper>

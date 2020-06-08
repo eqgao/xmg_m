@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com._520it.crm.mapper.TestMapper">
+
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Test">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="sn" jdbcType="VARCHAR" property="sn"/>
+        <result column="testTime" jdbcType="DATE" property="testTime"/>
+        <result column="testResult" jdbcType="INTEGER" property="testResult"/>
+
+
+        <association columnPrefix="ps_"
+                     javaType="com._520it.crm.domain.PotenStudent" property="potenStudent">
+            <result column="id" property="id"/>
+            <result column="name" property="name"/>
+            <result column="qq" property="qq"/>
+            <result column="tel" property="tel"/>
+        </association>
+
+
+        <association property="course" javaType="com._520it.crm.domain.Course"
+                     columnPrefix="c_">
+            <result property="id" column="id"/>
+            <result property="name" column="name"/>
+        </association>
+    </resultMap>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+		delete from test
+		where id = #{id,jdbcType=BIGINT}
+	</delete>
+    <insert id="insert" keyProperty="id" parameterType="com._520it.crm.domain.Test"
+            useGeneratedKeys="true">
+		insert into test (sn, potenstudent_id, course_id,
+		testTime, testResult)
+		values (#{sn,jdbcType=VARCHAR},
+		#{potenStudent.id,jdbcType=BIGINT},
+		#{course.id,jdbcType=BIGINT},
+		#{testTime,jdbcType=DATE}, #{testResult,jdbcType=INTEGER})
+	</insert>
+    <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Test">
+		update test
+		set sn
+		= #{sn,jdbcType=VARCHAR},
+		potenstudent_id =
+		#{potenStudent.id,jdbcType=BIGINT},
+		course_id =
+		#{course.id,jdbcType=BIGINT},
+		testTime = #{testTime,jdbcType=DATE},
+		testResult = #{testResult,jdbcType=INTEGER}
+		where id =
+		#{id,jdbcType=BIGINT}
+	</update>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long"
+            resultMap="BaseResultMap">
+		select id, sn, potenstudent_id, course_id, testTime,
+		testResult
+		from test
+		where id = #{id,jdbcType=BIGINT}
+	</select>
+
+    <sql id="base_where">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (
+                ps.name like concat ('%',#{keyword},'%') or
+                c.name
+                like
+                concat ('%',#{keyword},'%')
+                )
+            </if>
+            <if test="beginTime != null ">
+                and
+                t.testTime &gt;= #{beginTime}
+
+            </if>
+            <if test="endTime != null">
+                and
+                t.testTime &lt;= #{endTime}
+            </if>
+            <if test="minResult != null and minResult != ''">
+                and
+                t.testResult &gt;= #{minResult}
+
+            </if>
+            <if test="maxResult != null and maxResult != ''">
+                and
+                t.testResult &lt;= #{maxResult}
+
+            </if>
+        </where>
+    </sql>
+
+
+    <sql id="base_column">
+		t.id, t.sn,ps.id ps_id, t.course_id,
+		t.testTime,t.testResult,
+		ps.name
+		ps_name,ps.qq ps_qq,ps.tel ps_tel,c.id
+		c_id,c.name c_name
+	</sql>
+    <sql id="base_table">
+		test t left join potenstudent ps on
+		t.potenstudent_id =ps.id
+		left join
+		course c on t.course_id = c.id
+	</sql>
+
+    <select id="getTotal" resultType="long">
+        select count(t.id)
+        from
+        <include refid="base_table"/>
+        <include refid="base_where"/>
+    </select>
+    <select id="query" resultMap="BaseResultMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="base_table"/>
+        <include refid="base_where"/>
+        limit #{start},#{rows}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="base_table"/>
+    </select>
+
+    <!--==================================================-->
+    <select id="selectTestByName" resultMap="BaseResultMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="base_table"/>
+        where potenStudent_id = #{id}
+    </select>
+    <select id="selectByResult" resultMap="BaseResultMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="base_table"/>
+        where potenStudent_id = #{id}
+        and testResult &gt;= 60
+    </select>
+    <!--==================================================-->
+</mapper>

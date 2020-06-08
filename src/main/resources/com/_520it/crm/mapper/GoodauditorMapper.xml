@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.GoodauditorMapper" >
+  <resultMap id="BaseResultMap" type="com._520it.crm.domain.Goodauditor" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="price" property="price" jdbcType="DECIMAL" />
+    <result column="number" property="number" jdbcType="INTEGER" />
+    <result column="unit" property="unit" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="totalPrice" property="totalprice" jdbcType="DECIMAL" />
+    <result column="applier_id" property="applierId" jdbcType="BIGINT" />
+    <result column="auditor_id" property="auditorId" jdbcType="BIGINT" />
+    <result column="state" property="state" jdbcType="INTEGER" />
+    <result column="applier_time" property="applierTime" jdbcType="TIMESTAMP" />
+    <result column="audiotr_time" property="audiotrTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from goodauditor
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com._520it.crm.domain.Goodauditor" useGeneratedKeys="true" keyProperty="id" >
+    insert into goodauditor (name, price, number, 
+      unit, remark, totalPrice, 
+      applier_id, auditor_id, state, 
+      applier_time, audiotr_time)
+    values (#{name,jdbcType=VARCHAR}, #{price,jdbcType=DECIMAL}, #{number,jdbcType=INTEGER}, 
+      #{unit,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}, #{totalprice,jdbcType=DECIMAL}, 
+      #{applierId,jdbcType=BIGINT}, #{auditorId,jdbcType=BIGINT}, #{state,jdbcType=INTEGER}, 
+      #{applierTime,jdbcType=TIMESTAMP}, #{audiotrTime,jdbcType=TIMESTAMP})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Goodauditor" >
+    update goodauditor
+    set name = #{name,jdbcType=VARCHAR},
+      price = #{price,jdbcType=DECIMAL},
+      number = #{number,jdbcType=INTEGER},
+      unit = #{unit,jdbcType=VARCHAR},
+      remark = #{remark,jdbcType=VARCHAR},
+      totalPrice = #{totalprice,jdbcType=DECIMAL},
+      applier_id = #{applierId,jdbcType=BIGINT},
+      auditor_id = #{auditorId,jdbcType=BIGINT},
+      state = #{state,jdbcType=INTEGER},
+      applier_time = #{applierTime,jdbcType=TIMESTAMP},
+      audiotr_time = #{audiotrTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, name, price, number, unit, remark, totalPrice, applier_id, auditor_id, 
+    state, applier_time, audiotr_time
+    from goodauditor
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, name, price, number, unit, remark, totalPrice, applier_id, auditor_id, 
+    state, applier_time, audiotr_time
+    from goodauditor
+  </select>
+</mapper>

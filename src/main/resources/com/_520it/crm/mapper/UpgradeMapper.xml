@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.UpgradeMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Upgrade">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+
+        <result column="upgradeTime" property="upgradetime" jdbcType="DATE"/>
+        <result column="status" property="status" jdbcType="INTEGER"/>
+        <association javaType="Student" property="student" columnPrefix="s_">
+            <result property="id" column="id"/>
+            <result property="name" column="name"/>
+            <result property="qq" column="qq"/>
+            <result property="tel" column="tel"/>
+        </association>
+        <association javaType="Employee" property="emp" columnPrefix="e_">
+            <result property="id" column="id"/>
+            <result property="realname" column="realname"/>
+        </association>
+        <association property="classinfo" javaType="Classinfo" columnPrefix="c_">
+            <result property="id" column="id"/>
+            <result property="name" column="name"/>
+        </association>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from upgrade
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com._520it.crm.domain.Upgrade" useGeneratedKeys="true" keyProperty="id">
+    insert into upgrade (student_id, employee_id, upgradeTime, 
+      class_id, status)
+    values (#{student.id,jdbcType=BIGINT}, #{emp.id,jdbcType=BIGINT}, #{upgradetime,jdbcType=DATE}, 
+      #{classinfo.id,jdbcType=BIGINT}, #{status,jdbcType=INTEGER})
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Upgrade">
+        update upgrade
+        <set>
+            <if test="emp!=null">
+                employee_id = #{emp.id,jdbcType=BIGINT},
+            </if>
+            <if test="student!=null">
+                student_id = #{student.id,jdbcType=BIGINT},
+            </if>
+            <if test="upgradetime!=null">
+                upgradeTime = #{upgradetime,jdbcType=DATE},
+            </if>
+            <if test="classinfo!=null">
+                class_id = #{classinfo.id,jdbcType=BIGINT},
+            </if>
+            <if test="status!=null">
+                status = #{status,jdbcType=INTEGER}
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select id, student_id, employee_id, upgradeTime, class_id, status
+    from upgrade
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select u.*,s.id s_id ,s.name s_name,s.qq s_qq,s.tel s_tel,
+        e.id e_id,e.realname e_realname,
+        c.id c_id,c.name c_name
+        from upgrade u
+        left join student s on s.id = u.student_id
+        left join employee e on e.id = u.employee_id
+        left join classinfo c on c.id = u.class_id
+  </select>
+
+    <sql id="where_sql">
+        <where>
+            <if test="stuName!=null">
+                s.name like concat('%',#{stuName},'%')
+            </if>
+            <if test="classinfoName!=null">
+                and c.name like concat('%',#{classinfoName},'%')
+            </if>
+            <if test="startTime!=null">
+                and u.upgradetime &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and u.upgradetime &lt;= #{endTime}
+            </if>
+            <if test="status!=null and status!=-1">
+                and u.status = #{status}
+            </if>
+        </where>
+
+    </sql>
+
+    <!-- 查询总结果数 -->
+    <select id="queryPageCount" resultType="long">
+        select count(*)
+        from upgrade u
+        left join student s on s.id = u.student_id
+        left join employee e on e.id = u.employee_id
+        left join classinfo c on c.id = u.class_id
+        <include refid="where_sql"/>
+    </select>
+
+    <!-- 查询结果集 -->
+    <select id="queryPageResult" resultMap="BaseResultMap">
+        select u.*,s.id s_id ,s.name s_name,s.qq s_qq,s.tel s_tel,
+        e.id e_id,e.realname e_realname,
+        c.id c_id,c.name c_name
+        from upgrade u
+        left join student s on s.id = u.student_id
+        left join employee e on e.id = u.employee_id
+        left join classinfo c on c.id = u.class_id
+        <include refid="where_sql"/>
+        limit #{start},#{rows}
+    </select>
+
+</mapper>

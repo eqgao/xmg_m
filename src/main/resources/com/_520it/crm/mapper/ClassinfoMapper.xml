@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.ClassinfoMapper" >
+  <resultMap id="BaseResultMap" type="com._520it.crm.domain.Classinfo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="sn" property="sn" jdbcType="VARCHAR" />
+    <result column="beginTime" property="begintime" jdbcType="DATE" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="BIT" />
+    <result column="totalMoney" property="totalMoney"/>
+    <association property="employee" javaType="com._520it.crm.domain.Employee" columnPrefix="e_">
+        <result column="id" property="id"></result>
+        <result column="name" property="realname"/>
+    </association>
+    <association property="classRoom" javaType="com._520it.crm.domain.ClassRoom" columnPrefix="cr_">
+        <result column="id" property="id"></result>
+        <result column="name" property="name"></result>
+    </association>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from classinfo
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com._520it.crm.domain.Classinfo" useGeneratedKeys="true" keyProperty="id" >
+    insert into classinfo (name, sn, beginTime, 
+      teacher_id, remark, status,classRoom_id,totalMoney
+      )
+    values (#{name,jdbcType=VARCHAR}, #{sn,jdbcType=VARCHAR}, #{begintime,jdbcType=DATE}, 
+      #{employee.id,jdbcType=BIGINT}, #{remark,jdbcType=VARCHAR}, #{status,jdbcType=BIT},
+      #{classRoom.id},#{totalMoney}
+      )
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Classinfo" >
+    update classinfo
+    set sn = #{sn,jdbcType=VARCHAR},
+      beginTime = #{begintime,jdbcType=DATE},
+      teacher_id = #{employee.id,jdbcType=BIGINT},
+      remark = #{remark,jdbcType=VARCHAR},
+      status = #{status,jdbcType=BIT},
+      classRoom_id = #{classRoom.id}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, name, sn, beginTime, teacher_id, remark, status
+    from classinfo
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+
+  <sql id="where_sql">
+      <where>
+          <if test="keyword!=null and keyword!=''">
+            and (
+                  c.name like concat('%',#{keyword},'%')
+                  or c.sn like concat('%',#{keyword},'%')
+                  or cr.name like concat('%',#{keyword},'%')
+                  or e.realname like concat('%',#{keyword},'%')
+                )
+          </if>
+          <if test="startTime!=null">
+              and beginTime &gt;= #{startTime}
+          </if>
+          <if test="endTime!=null">
+            and beginTime &lt;= #{endTime}
+          </if>
+      </where>
+  </sql>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select c.*,e.id e_id, e.realname e_name,
+        cr.id cr_id ,cr.name cr_name
+        FROM classinfo c
+        LEFT JOIN employee e ON c.teacher_id = e.id
+        LEFT  JOIN classroom cr ON cr.id = c.classRoom_id
+  </select>
+
+    <!-- 查询总结果数 -->
+    <select id="queryPageCount" resultType="long">
+        select count(*) from classinfo c
+        LEFT JOIN employee e ON c.teacher_id = e.id
+        LEFT  JOIN classroom cr ON cr.id = c.classRoom_id
+        <include refid="where_sql"/>
+    </select>
+
+    <!-- 查询结果集 -->
+    <select id="queryPageResult" resultMap="BaseResultMap">
+        select c.*,e.id e_id, e.realname e_name,
+        cr.id cr_id ,cr.name cr_name
+        FROM classinfo c
+        LEFT JOIN employee e ON c.teacher_id = e.id
+        LEFT  JOIN classroom cr ON cr.id = c.classRoom_id
+        <include refid="where_sql"/>
+        limit #{start},#{rows}
+    </select>
+</mapper>
